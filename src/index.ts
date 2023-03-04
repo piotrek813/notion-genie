@@ -30,7 +30,7 @@ const notionTypeMap = {
   files: NotionFiles,
 };
 
-type PageParent = { databaseId: string } | { pageId: string };
+type PageParent = { databaseId: string } | { page_id: string };
 
 type NotionTypeMap = typeof notionTypeMap;
 type NotionTypeAlias = keyof NotionTypeMap;
