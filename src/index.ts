@@ -97,11 +97,15 @@ function createNotionType<T extends NotionTypeAlias>(
 }
 
 class NotionPage {
-  private parent: PageParent;
+  private parent?: PageParent;
+  private page_id?: string;
   public properties: Record<string, NotionType>;
 
-  constructor(parent: PageParent) {
-    this.parent = parent;
+  constructor(parent: PageParent);
+  constructor(page_id: string);
+  constructor(parentOrPageId: PageParent | string) {
+    if (typeof parentOrPageId === "string") this.page_id = parentOrPageId;
+    else this.parent = parentOrPageId;
     this.properties = {};
   }
 
