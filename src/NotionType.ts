@@ -85,7 +85,7 @@ export class NotionDate implements NotionType {
   constructor(start: Date, end?: Date) {
     this.date = {
       start: start.toISOString(),
-      end: end.toISOString(),
+      end: end?.toISOString(),
     };
   }
 }

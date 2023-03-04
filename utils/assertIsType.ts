@@ -1,23 +1,3 @@
-// function assertIsType<T extends PrimitiveTypes>(
-//   value: unknown,
-//   ...type: T[]
-// ): asserts value is typeMap[T] {
-//   if (!type.some((t) => t === typeof value)) {
-//     throw new Error(`Incorrect type. Type should be ${type} instead was ${typeof value}`);
-//   }
-// }
-
-// function typeGuard<T extends PrimitiveOrConstructor[]>(o:unknown, className: T):
-//   o is GuardedType<T[number]> {
-
-//     for(let name of className) {
-//       if (typeof name === 'string' && typeof o === name) return true;
-//       if (typeof name === 'function' && o instanceof name) return true;
-//     }
-
-//     return false;
-// }
-
 type typeMap = {
   string: string;
   number: number;

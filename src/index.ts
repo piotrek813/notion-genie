@@ -29,6 +29,9 @@ const notionTypeMap = {
   multiselect: NotionMultiSelect,
   files: NotionFiles,
 };
+
+type PageParent = { databaseId: string } | { pageId: string };
+
 type NotionTypeMap = typeof notionTypeMap;
 type NotionTypeAlias = keyof NotionTypeMap;
 type NotionTypeValue<T extends NotionTypeAlias> = ConstructorParameters<NotionTypeMap[T]>;
@@ -56,23 +59,31 @@ function createNotionType<T extends NotionTypeAlias>(
     assertIsType(value, "string");
 
     return new notionTypeMap[type](value);
-  } else if (type === "number") {
+  }
+
+  if (type === "number") {
     const [value] = args;
     assertIsType(value, "number");
 
     return new notionTypeMap[type](value);
-  } else if (type === "date") {
+  }
+
+  if (type === "date") {
     const [start, end] = args;
     assertIsType(start, Date);
     assertIsType(end, Date, "undefined");
 
     return new notionTypeMap[type](start, end);
-  } else if (type === "checkbox") {
+  }
+
+  if (type === "checkbox") {
     const [value] = args;
     assertIsType(value, "boolean");
 
     return new notionTypeMap[type](value);
-  } else if (type === "multiselect" || type === "files") {
+  }
+
+  if (type === "multiselect" || type === "files") {
     const [values] = args;
     if (!Array.isArray(values)) {
       assertIsType(values, "string");
@@ -81,14 +92,16 @@ function createNotionType<T extends NotionTypeAlias>(
 
     return new notionTypeMap[type](values);
   }
+
+  throw new Error(`Implement type ${type}`);
 }
 
 class NotionPage {
-  private parent: { database_id: string };
+  private parent: PageParent;
   public properties: Record<string, NotionType>;
 
-  constructor(databaseId: string) {
-    this.parent = { database_id: databaseId };
+  constructor(parent: PageParent) {
+    this.parent = parent;
     this.properties = {};
   }
 
