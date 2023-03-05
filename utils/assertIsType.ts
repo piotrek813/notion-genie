@@ -6,6 +6,7 @@ type typeMap = {
   symbol: symbol;
   undefined: undefined;
   object: object;
+  null: null;
 };
 
 type PrimitiveTypes = keyof typeMap;
@@ -24,6 +25,7 @@ export function assertIsType<T extends PrimitiveOrConstructor[]>(
 ): asserts value is GuardedType<T[number]> {
   for (const type of types) {
     if (typeof type === "string" && typeof value === type) return;
+    if (typeof type === "string" && type === "null" && value === null) return;
     else if (type instanceof Function && value instanceof type) return;
   }
   throw new Error(`Incorrect type. Type should be ${types} instead was ${typeof value}`);

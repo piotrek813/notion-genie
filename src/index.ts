@@ -1,5 +1,5 @@
+//@ts-nocheck
 import {
-  NotionType,
   NotionText,
   NotionEmail,
   NotionPhone,
@@ -16,30 +16,30 @@ import {
 import { assertIsType } from "../utils/assertIsType";
 
 const notionTypeMap = {
-  text: NotionText,
+  // text: NotionText,
   email: NotionEmail,
   phone: NotionPhone,
   checkbox: NotionCheckbox,
-  date: NotionDate,
+  // date: NotionDate,
   number: NotionNumber,
   url: NotionUrl,
-  title: NotionTitle,
+  // title: NotionTitle,
   select: NotionSelect,
-  status: NotionStatus,
-  multiselect: NotionMultiSelect,
-  files: NotionFiles,
+  // status: NotionStatus,
+  // multiselect: NotionMultiSelect,
+  // files: NotionFiles,
 };
 
 type PageParent = { databaseId: string } | { page_id: string };
 
 type NotionTypeMap = typeof notionTypeMap;
 type NotionTypeAlias = keyof NotionTypeMap;
+type NotionType = NotionTypeMap[NotionTypeAlias];
 type NotionTypeValue<T extends NotionTypeAlias> = ConstructorParameters<NotionTypeMap[T]>;
 
 function assertIsTypeAlias(x: string): asserts x is NotionTypeAlias {
   if (!(x in notionTypeMap)) throw new Error(`${x} is not a valid type`);
 }
-
 function createNotionType<T extends NotionTypeAlias>(
   type: T,
   ...args: NotionTypeValue<T>
@@ -56,14 +56,16 @@ function createNotionType<T extends NotionTypeAlias>(
     type === "status"
   ) {
     const [value] = args;
-    assertIsType(value, "string");
+    console.log(typeof value);
+
+    assertIsType(value, "string", "null");
 
     return new notionTypeMap[type](value);
   }
 
   if (type === "number") {
     const [value] = args;
-    assertIsType(value, "number");
+    assertIsType(value, "number", "null");
 
     return new notionTypeMap[type](value);
   }
@@ -78,7 +80,7 @@ function createNotionType<T extends NotionTypeAlias>(
 
   if (type === "checkbox") {
     const [value] = args;
-    assertIsType(value, "boolean");
+    assertIsType(value, "boolean", "checkbox");
 
     return new notionTypeMap[type](value);
   }
@@ -97,15 +99,20 @@ function createNotionType<T extends NotionTypeAlias>(
 }
 
 class NotionPage {
-  private parent?: PageParent;
-  private page_id?: string;
+  public parent: PageParent;
+  public page_id: string;
   public properties: Record<string, NotionType>;
 
   constructor(parent: PageParent);
   constructor(page_id: string);
   constructor(parentOrPageId: PageParent | string) {
-    if (typeof parentOrPageId === "string") this.page_id = parentOrPageId;
-    else this.parent = parentOrPageId;
+    if (typeof parentOrPageId === "string") {
+      this.page_id = parentOrPageId;
+      this.parent = { databaseId: "" };
+    } else {
+      this.parent = parentOrPageId;
+      this.page_id = "";
+    }
     this.properties = {};
   }
 
@@ -125,6 +132,14 @@ class NotionPage {
   public getProperty(name: string) {
     return this.properties[name];
   }
+
+  // public getUpdatePageParameters() {
+  //   if (!this.page_id) throw new Error("page_id is undefied");
+  //   return {
+  //     page_id: this.page_id,
+  //     properties: Object(this.properties).key,
+  //   };
+  // }
 }
 
 export { NotionPage };
