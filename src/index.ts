@@ -1,6 +1,5 @@
-//@ts-nocheck
 import {
-  NotionText,
+  NotionRichText,
   NotionEmail,
   NotionPhone,
   NotionCheckbox,
@@ -12,51 +11,47 @@ import {
   NotionStatus,
   NotionMultiSelect,
   NotionFiles,
+  NotionCover,
 } from "./NotionType";
 import { assertIsType } from "../utils/assertIsType";
 
 const notionTypeMap = {
-  // text: NotionText,
+  text: NotionRichText,
   email: NotionEmail,
   phone: NotionPhone,
   checkbox: NotionCheckbox,
-  // date: NotionDate,
+  date: NotionDate,
   number: NotionNumber,
   url: NotionUrl,
-  // title: NotionTitle,
+  title: NotionTitle,
   select: NotionSelect,
-  // status: NotionStatus,
-  // multiselect: NotionMultiSelect,
-  // files: NotionFiles,
+  status: NotionStatus,
+  multiselect: NotionMultiSelect,
+  files: NotionFiles,
 };
 
 type PageParent = { databaseId: string } | { page_id: string };
 
 type NotionTypeMap = typeof notionTypeMap;
 type NotionTypeAlias = keyof NotionTypeMap;
-type NotionType = NotionTypeMap[NotionTypeAlias];
+type NotionType = InstanceType<NotionTypeMap[NotionTypeAlias]>;
 type NotionTypeValue<T extends NotionTypeAlias> = ConstructorParameters<NotionTypeMap[T]>;
 
 function assertIsTypeAlias(x: string): asserts x is NotionTypeAlias {
   if (!(x in notionTypeMap)) throw new Error(`${x} is not a valid type`);
 }
-function createNotionType<T extends NotionTypeAlias>(
-  type: T,
-  ...args: NotionTypeValue<T>
-): NotionType {
+
+function createNotionType<T extends NotionTypeAlias>(type: T, ...args: NotionTypeValue<T>) {
   assertIsTypeAlias(type);
 
   if (
     type === "phone" ||
     type === "email" ||
-    type === "text" ||
     type === "url" ||
-    type === "title" ||
     type === "select" ||
     type === "status"
   ) {
     const [value] = args;
-    console.log(typeof value);
 
     assertIsType(value, "string", "null");
 
@@ -72,15 +67,22 @@ function createNotionType<T extends NotionTypeAlias>(
 
   if (type === "date") {
     const [start, end] = args;
-    assertIsType(start, Date);
-    assertIsType(end, Date, "undefined");
+    assertIsType(start, "string", "null");
+    assertIsType(end, "string", "undefined");
 
     return new notionTypeMap[type](start, end);
   }
 
   if (type === "checkbox") {
     const [value] = args;
-    assertIsType(value, "boolean", "checkbox");
+    assertIsType(value, "boolean");
+
+    return new notionTypeMap[type](value);
+  }
+
+  if (type === "text" || type === "title") {
+    const [value] = args;
+    assertIsType(value, "string");
 
     return new notionTypeMap[type](value);
   }
@@ -102,10 +104,11 @@ class NotionPage {
   public parent: PageParent;
   public page_id: string;
   public properties: Record<string, NotionType>;
+  public cover?: NotionCover;
 
-  constructor(parent: PageParent);
-  constructor(page_id: string);
-  constructor(parentOrPageId: PageParent | string) {
+  constructor(parent: PageParent, coverUrl?: string);
+  constructor(page_id: string, coverUrl?: string);
+  constructor(parentOrPageId: PageParent | string, coverUrl?: string) {
     if (typeof parentOrPageId === "string") {
       this.page_id = parentOrPageId;
       this.parent = { databaseId: "" };
@@ -113,10 +116,15 @@ class NotionPage {
       this.parent = parentOrPageId;
       this.page_id = "";
     }
+    if (coverUrl) this.cover = new NotionCover(coverUrl);
     this.properties = {};
   }
 
-  public addProperty<T extends NotionTypeAlias>(
+  public setCover(url: string) {
+    this.cover = new NotionCover(url);
+  }
+
+  public setProperty<T extends NotionTypeAlias>(
     type: T,
     name: string,
     ...args: NotionTypeValue<T>
@@ -132,14 +140,8 @@ class NotionPage {
   public getProperty(name: string) {
     return this.properties[name];
   }
-
-  // public getUpdatePageParameters() {
-  //   if (!this.page_id) throw new Error("page_id is undefied");
-  //   return {
-  //     page_id: this.page_id,
-  //     properties: Object(this.properties).key,
-  //   };
-  // }
 }
 
 export { NotionPage };
+const page = new NotionPage("cds");
+page.setProperty("number", "string", null);

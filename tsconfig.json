@@ -7,10 +7,10 @@
     "outDir": "lib",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
   },
   "include": [
-    "src"
+    "src/**/*", "utils/**/*"
   ],
   "exclude": ["node_modules"]
 }

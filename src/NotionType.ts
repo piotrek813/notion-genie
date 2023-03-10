@@ -9,44 +9,91 @@ Relation
 Rollup
 */
 
-// export class NotionText {
-//   private rich_text: [
-//     {
-//       text: {
-//         content: string;
-//       };
-//     }
-//   ];
+type RichTextItem = {
+  text: {
+    content: string;
+    link?: {
+      url: string;
+    } | null;
+  };
+  type?: "text";
+  annotations?: {
+    bold?: boolean;
+    italic?: boolean;
+    strikethrough?: boolean;
+    underline?: boolean;
+    code?: boolean;
+    color?:
+      | "default"
+      | "gray"
+      | "brown"
+      | "orange"
+      | "yellow"
+      | "green"
+      | "blue"
+      | "purple"
+      | "pink"
+      | "red"
+      | "gray_background"
+      | "brown_background"
+      | "orange_background"
+      | "yellow_background"
+      | "green_background"
+      | "blue_background"
+      | "purple_background"
+      | "pink_background"
+      | "red_background";
+  };
+};
 
-//   constructor(value: string) {
-//     this.rich_text = [
-//       {
-//         text: {
-//           content: value,
-//         },
-//       },
-//     ];
-//   }
-// }
-// export class NotionTitle {
-//   private title: [
-//     {
-//       text: {
-//         content: string;
-//       };
-//     }
-//   ];
+interface INotionRichText {
+  rich_text: Array<RichTextItem>;
+  type?: "rich_text";
+}
+export class NotionRichText implements INotionRichText {
+  public rich_text: [
+    {
+      text: {
+        content: string;
+      };
+    }
+  ];
+  public type?: "rich_text";
 
-//   constructor(value: string) {
-//     this.title = [
-//       {
-//         text: {
-//           content: value,
-//         },
-//       },
-//     ];
-//   }
-// }
+  constructor(value: string) {
+    this.rich_text = [
+      {
+        text: {
+          content: value,
+        },
+      },
+    ];
+  }
+}
+interface INotionTitle {
+  title: Array<RichTextItem>;
+  type?: "title";
+}
+export class NotionTitle implements INotionTitle {
+  public title: [
+    {
+      text: {
+        content: string;
+      };
+    }
+  ];
+  public type?: "title";
+
+  constructor(value: string) {
+    this.title = [
+      {
+        text: {
+          content: value,
+        },
+      },
+    ];
+  }
+}
 interface INotionEmail {
   email: string | null;
   type?: "email";
@@ -91,23 +138,33 @@ export class NotionCheckbox implements INotionCheckbox {
   public checkbox: boolean;
   public type?: "checkbox";
 
-  constructor(value: boolean | null) {
-    this.checkbox = value ?? false;
+  constructor(value: boolean) {
+    this.checkbox = value;
   }
 }
-// export class NotionDate {
-//   private date: {
-//     start: string;
-//     end?: string;
-//   };
 
-//   constructor(start: Date, end?: Date) {
-//     this.date = {
-//       start: start.toISOString(),
-//       end: end?.toISOString(),
-//     };
-//   }
-// }
+interface INotionDate {
+  date: {
+    start: string;
+    end?: string | null;
+  } | null;
+  type?: "date";
+}
+export class NotionDate implements INotionDate {
+  public date: {
+    start: string;
+    end?: string;
+  } | null;
+
+  constructor(start: string | null, end?: string) {
+    if (!start) this.date = null;
+    else
+      this.date = {
+        start: start,
+        end: end,
+      };
+  }
+}
 
 export interface INotionNumber {
   number: number | null;
@@ -133,17 +190,17 @@ type SelectColor =
   | "purple"
   | "pink"
   | "red";
-type NotionSelactable = {
+type NotionSelectable = {
   name: string;
   id?: string;
   color?: SelectColor;
-} | null;
+};
 interface INotionSelect {
-  select: NotionSelactable;
+  select: NotionSelectable | null;
   type?: "select";
 }
 export class NotionSelect implements INotionSelect {
-  public select: NotionSelactable;
+  public select: NotionSelectable | null;
   public type?: "select";
 
   constructor(value: string | null) {
@@ -154,49 +211,88 @@ export class NotionSelect implements INotionSelect {
       };
   }
 }
-// export class NotionStatus {
-//   private status: {
-//     name: string;
-//   };
+interface INotionStatus {
+  status: NotionSelectable | null;
+  type?: "status";
+}
+export class NotionStatus implements INotionStatus {
+  public status: NotionSelectable | null;
+  public type?: "status";
 
-//   constructor(value: string) {
-//     this.status = {
-//       name: value,
-//     };
-//   }
-// }
-// export class NotionMultiSelect {
-//   private multi_select: Record<"name", string>[];
+  constructor(value: string | null) {
+    if (!value) this.status = null;
+    else
+      this.status = {
+        name: value,
+      };
+  }
+}
+interface INotionMultiSelect {
+  multi_select: Array<NotionSelectable>;
+  type?: "multi_select";
+}
+export class NotionMultiSelect implements INotionMultiSelect {
+  public multi_select: Array<NotionSelectable>;
+  public type?: "multi_select";
 
-//   constructor(value: string | string[]) {
-//     if (typeof value === "string") this.multi_select = [{ name: value }];
-//     else if (Array.isArray(value))
-//       this.multi_select = value.map((option) => ({
-//         name: option,
-//       }));
-//     else this.multi_select = [];
-//   }
-// }
-// class NotionExternalFile {
-//   public name: string;
-//   public external: {
-//     url: string;
-//   };
+  constructor(value: string | string[]) {
+    if (typeof value === "string") this.multi_select = [{ name: value }];
+    else if (Array.isArray(value))
+      this.multi_select = value.map((option) => ({
+        name: option,
+      }));
+    else this.multi_select = [];
+  }
+}
 
-//   constructor(value: string) {
-//     this.name = value;
-//     this.external = {
-//       url: value,
-//     };
-//   }
-// }
+interface INotionExternal {
+  external: {
+    url: string;
+  };
+  type?: "external";
+}
 
-// export class NotionFiles {
-//   private files: NotionExternalFile[];
+interface INotionExternalFile extends INotionExternal {
+  name: string;
+}
 
-//   constructor(value: string | string[]) {
-//     if (typeof value === "string") this.files = [new NotionExternalFile(value)];
-//     else if (Array.isArray(value)) this.files = value.map((file) => new NotionExternalFile(file));
-//     else this.files = [];
-//   }
-// }
+interface INotionFiles {
+  files: Array<INotionExternalFile>;
+  type?: "files";
+}
+
+class NotionExternalFile implements INotionExternalFile {
+  public name: string;
+  public external: {
+    url: string;
+  };
+  public type?: "external";
+
+  constructor(value: string) {
+    this.name = value;
+    this.external = {
+      url: value,
+    };
+  }
+}
+
+export class NotionFiles implements INotionFiles {
+  public files: NotionExternalFile[];
+
+  constructor(value: string | string[]) {
+    if (typeof value === "string") this.files = [new NotionExternalFile(value)];
+    else if (Array.isArray(value)) this.files = value.map((file) => new NotionExternalFile(file));
+    else this.files = [];
+  }
+}
+
+export class NotionCover implements INotionExternal {
+  public external: { url: string };
+  public type?: "external";
+
+  constructor(url: string) {
+    this.external = {
+      url: url,
+    };
+  }
+}
